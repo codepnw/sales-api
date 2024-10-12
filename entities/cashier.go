@@ -9,3 +9,8 @@ type Cashier struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+
+type CashiersResponse struct {
+	Id   uint   `json:"cashierId"`
+	Name string `json:"name"`
+}
