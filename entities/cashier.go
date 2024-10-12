@@ -10,7 +10,7 @@ type Cashier struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-type CashiersResponse struct {
+type Cashiers struct {
 	Id   uint   `json:"cashierId"`
 	Name string `json:"name"`
 }

@@ -5,8 +5,19 @@ import (
 	"strconv"
 
 	"github.com/codepnw/sales-api/entities"
+	"github.com/codepnw/sales-api/pkg/responses"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+)
+
+type ErrCashier string
+
+const (
+	cashierCreateErr ErrCashier = "cashier-001"
+	cashierGetAllErr ErrCashier = "cashier-002"
+	cashierGetOneErr ErrCashier = "cashier-003"
+	cashierUpdateErr ErrCashier = "cashier-004"
+	cashierDeleteErr ErrCashier = "cashier-005"
 )
 
 type ICashier interface {
@@ -29,20 +40,20 @@ func (h *cashier) CreateCashier(c *gin.Context) {
 	var req entities.Cashier
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"message": "data bad request",
-			"error":   err.Error(),
-		})
+		responses.NewResponse(c).Error(
+			http.StatusBadRequest,
+			string(cashierCreateErr),
+			err.Error(),
+		)
 		return
 	}
 
 	if req.Name == "" || req.Passcode == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"message": "name and passcode is required",
-			"error":   nil,
-		})
+		responses.NewResponse(c).Error(
+			http.StatusBadRequest,
+			string(cashierCreateErr),
+			"name and passcode is required",
+		)
 		return
 	}
 
@@ -54,22 +65,21 @@ func (h *cashier) CreateCashier(c *gin.Context) {
 	// database create
 	h.db.Create(&cashier)
 
-	c.JSON(http.StatusCreated, gin.H{
-		"success": true,
-		"message": "cashier created",
-	})
+	responses.NewResponse(c).Success(http.StatusCreated, "cashier created")
 }
-
-
 
 func (h *cashier) GetCashiers(c *gin.Context) {
 	limit, _ := strconv.Atoi(c.Query("limit"))
 	skip, _ := strconv.Atoi(c.Query("skip"))
 	var count int64
-	var cashiers []entities.CashiersResponse
+	var cashiers []entities.Cashiers
+
+	if limit == 0 {
+		limit = 10
+	}
 
 	// database select
-	h.db.Select("*").Limit(limit).Offset(skip).Find(&cashiers).Count(&count)
+	h.db.Select("id, name").Limit(limit).Offset(skip).Find(&cashiers).Count(&count)
 
 	metaMap := map[string]any{
 		"total": count,
@@ -82,11 +92,7 @@ func (h *cashier) GetCashiers(c *gin.Context) {
 		"meta":     metaMap,
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "success",
-		"data":    cashiersData,
-	})
+	responses.NewResponse(c).Success(http.StatusOK, cashiersData)
 }
 
 func (h *cashier) GetCashierDetails(c *gin.Context) {
@@ -101,18 +107,15 @@ func (h *cashier) GetCashierDetails(c *gin.Context) {
 	data["name"] = cashier.Name
 
 	if cashier.Id == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
-			"success": false,
-			"message": "cashier id not found",
-			"error":   map[string]any{},
-		})
+		responses.NewResponse(c).Error(
+			http.StatusNotFound,
+			string(cashierGetOneErr),
+			"id not found",
+		)
+		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "success",
-		"data":    data,
-	})
+	responses.NewResponse(c).Success(http.StatusOK, data)
 }
 
 func (h *cashier) UpdateCashier(c *gin.Context) {
@@ -123,20 +126,21 @@ func (h *cashier) UpdateCashier(c *gin.Context) {
 	h.db.Find(&cashier, "id = ?", cashierId)
 
 	if cashier.Name == "" {
-		c.JSON(http.StatusNotFound, gin.H{
-			"success": false,
-			"message": "cashier not found",
-		})
+		responses.NewResponse(c).Error(
+			http.StatusNotFound,
+			string(cashierUpdateErr),
+			"name is required",
+		)
 		return
 	}
 
 	var updateData entities.Cashier
 	if err := c.ShouldBindJSON(&updateData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"message": "cashier name is required",
-			"error":   err.Error(),
-		})
+		responses.NewResponse(c).Error(
+			http.StatusBadRequest,
+			string(cashierUpdateErr),
+			err.Error(),
+		)
 		return
 	}
 
@@ -144,11 +148,7 @@ func (h *cashier) UpdateCashier(c *gin.Context) {
 	// database save
 	h.db.Save(&cashier)
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "success",
-		"data":    cashier,
-	})
+	responses.NewResponse(c).Success(http.StatusOK, cashier)
 }
 
 func (h *cashier) DeleteCashier(c *gin.Context) {
@@ -159,17 +159,15 @@ func (h *cashier) DeleteCashier(c *gin.Context) {
 	h.db.Where("id = ?", cashierId).First(&cashier)
 
 	if cashier.Id == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
-			"success": false,
-			"message": "cashier not found",
-		})
+		responses.NewResponse(c).Error(
+			http.StatusNotFound,
+			string(cashierDeleteErr),
+			"id not found",
+		)
 		return
 	}
 	// database delete
 	h.db.Where("id = ?", cashierId).Delete(&cashier)
 
-	c.JSON(http.StatusNoContent, gin.H{
-		"success": true,
-		"message": "message",
-	})
+	responses.NewResponse(c).Success(http.StatusNoContent, nil)
 }
