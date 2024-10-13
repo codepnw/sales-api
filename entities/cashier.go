@@ -21,12 +21,5 @@ type CashierResponse struct {
 
 type CashierListResponse struct {
 	Cashiers []CashierResponse `json:"cashiers"`
-	Meta     *CashiersMeta     `json:"meta"`
+	Meta     *QueryMeta        `json:"meta"`
 }
-
-type CashiersMeta struct {
-	Total int `json:"total"`
-	Limit int `json:"limit"`
-	Skip  int `json:"skip"`
-}
-

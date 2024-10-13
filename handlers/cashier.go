@@ -105,7 +105,7 @@ func (h *cashier) GetCashiers(c *gin.Context) {
 
 	cashiersData := entities.CashierListResponse{
 		Cashiers: cashiers,
-		Meta: &entities.CashiersMeta{
+		Meta: &entities.QueryMeta{
 			Total: int(count),
 			Limit: limit,
 			Skip:  skip,
