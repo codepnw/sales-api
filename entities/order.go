@@ -37,3 +37,14 @@ type ProductOrder struct {
 	CategoryId int    `json:"categoryId"`
 	DiscountId int    `json:"discountId"`
 }
+
+type ProductRequest struct {
+	ProductId int `json:"productId"`
+	Quantity  int `json:"quantity"`
+}
+
+type OrderRequest struct {
+	PaymentId int               `json:"paymentId"`
+	TotalPaid int               `json:"totalPaid"`
+	Products  []*ProductRequest `json:"products"`
+}

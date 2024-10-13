@@ -9,6 +9,7 @@ import (
 func Setup(router *gin.Engine, version string) {
 	cashierRoute(router, version)
 	categoryRoute(router, version)
+	paymentRoutes(router, version)
 }
 
 func cashierRoute(router *gin.Engine, version string) {
@@ -32,4 +33,16 @@ func categoryRoute(router *gin.Engine, version string) {
 	g.POST("/", h.CreateCategory)
 	g.PATCH("/"+id, h.UpdateCategory)
 	g.DELETE("/"+id, h.DeleteCategory)
+}
+
+func paymentRoutes(router *gin.Engine, version string) {
+	h := handlers.NewPaymentHandler(database.GetDB())
+	g := router.Group(version + "/payments")
+	paramId := "/:paymentId"
+
+	g.POST("/", h.CreatePayment)
+	g.GET("/", h.GetPayments)
+	g.GET(paramId, h.GetPaymentDetails)
+	g.PATCH(paramId, h.UpdatePayment)
+	g.DELETE(paramId, h.DeletePayment)
 }

@@ -10,3 +10,5 @@ go.work
 
 *.env
 Makefile
+handlers/order.go
+handlers/product.go
