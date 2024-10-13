@@ -5,8 +5,10 @@ import (
 	"os"
 
 	"github.com/codepnw/sales-api/entities"
+	"github.com/codepnw/sales-api/pkg/logs"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var db *gorm.DB
@@ -22,13 +24,16 @@ func NewConnect() error {
 		"%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		DBUser, DBPassword, DBHost, DBPort, DBName,
 	)
-	connection, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	connection, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Error),
+	})
 	if err != nil {
-		return fmt.Errorf("failed connection database: %w", err)
+		logs.Error(err)
+		return fmt.Errorf("failed connection database")
 	}
 
 	db = connection
-	fmt.Println("database connected successfully")
+	logs.Info("database connected successfully")
 
 	if err := AutoMigrate(connection); err != nil {
 		return err
