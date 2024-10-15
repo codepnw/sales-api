@@ -17,7 +17,7 @@ func main() {
 		panic("failed load env file")
 	}
 
-	if err := database.NewConnect(); err != nil {
+	if err := database.NewPostgresConnect(); err != nil {
 		panic(err)
 	}
 
