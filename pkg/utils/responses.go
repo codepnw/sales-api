@@ -1,6 +1,8 @@
-package responses
+package utils
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+)
 
 type IResponse interface {
 	Success(code int, data any)
