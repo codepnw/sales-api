@@ -2,47 +2,44 @@ package routes
 
 import (
 	"github.com/codepnw/sales-api/database"
-	"github.com/codepnw/sales-api/handlers"
+	cathandlers "github.com/codepnw/sales-api/modules/categories/handlers"
+	catrepositories "github.com/codepnw/sales-api/modules/categories/repositories"
+	catservices "github.com/codepnw/sales-api/modules/categories/services"
+	prodhandlers "github.com/codepnw/sales-api/modules/products/handlers"
+	prodrepositories "github.com/codepnw/sales-api/modules/products/repositories"
+	prodservices "github.com/codepnw/sales-api/modules/products/services"
 	"github.com/gin-gonic/gin"
 )
 
 func Setup(router *gin.Engine, version string) {
-	cashierRoute(router, version)
-	categoryRoute(router, version)
-	paymentRoutes(router, version)
+	productRoutes(router, version)
+	categoryRoutes(router, version)
 }
 
-func cashierRoute(router *gin.Engine, version string) {
-	h := handlers.NewCashierHandler(database.GetDB())
-	g := router.Group(version + "/cashiers")
+func productRoutes(router *gin.Engine, version string) {
+	repo := prodrepositories.NewProductRepository(database.GetPostgresDB())
+	srv := prodservices.NewProductService(repo)
+	h := prodhandlers.NewProductHandler(srv)
+	g := router.Group(version + "/products")
+	paramId := "/:productId"
 
-	g.GET("/", h.GetCashiers)
-	g.GET("/:cashierId", h.GetCashierDetails)
-	g.POST("/", h.CreateCashier)
-	g.PATCH("/:cashierId", h.UpdateCashier)
-	g.DELETE("/:cashierId", h.DeleteCashier)
+	g.POST("/", h.CreateProduct)
+	g.GET("/", h.GetProducts)
+	g.GET(paramId, h.GetProduct)
+	g.PATCH(paramId, h.UpdateProduct)
+	g.DELETE(paramId, h.DeleteProduct)
 }
 
-func categoryRoute(router *gin.Engine, version string) {
-	h := handlers.NewCategoryHandler(database.GetDB())
+func categoryRoutes(router *gin.Engine, version string) {
+	repo := catrepositories.NewCategoryRepository(database.GetPostgresDB())
+	srv := catservices.NewCategoryService(repo)
+	h := cathandlers.NewCategoryHandler(srv)
 	g := router.Group(version + "/categories")
-	id := ":categoryId"
+	paramId := "/:categoryId"
 
-	g.GET("/", h.GetCategories)
-	g.GET("/"+id, h.GetCategory)
 	g.POST("/", h.CreateCategory)
-	g.PATCH("/"+id, h.UpdateCategory)
-	g.DELETE("/"+id, h.DeleteCategory)
-}
-
-func paymentRoutes(router *gin.Engine, version string) {
-	h := handlers.NewPaymentHandler(database.GetDB())
-	g := router.Group(version + "/payments")
-	paramId := "/:paymentId"
-
-	g.POST("/", h.CreatePayment)
-	g.GET("/", h.GetPayments)
-	g.GET(paramId, h.GetPaymentDetails)
-	g.PATCH(paramId, h.UpdatePayment)
-	g.DELETE(paramId, h.DeletePayment)
+	g.GET("/", h.GetAllCategory)
+	g.GET(paramId, h.GetOneCategory)
+	g.PATCH(paramId, h.UpdateCategory)
+	g.DELETE(paramId, h.DeleteCategory)
 }

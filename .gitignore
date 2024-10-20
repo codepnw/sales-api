@@ -8,6 +8,7 @@
 *.out
 go.work
 
+tmp
 *.env
 Makefile
 handlers/order.go
