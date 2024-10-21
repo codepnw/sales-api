@@ -1,28 +1,27 @@
 package main
 
 import (
+	"github.com/codepnw/sales-api/config"
 	"github.com/codepnw/sales-api/database"
 	"github.com/codepnw/sales-api/routes"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 )
 
 const (
-	envFile string = "dev.env"
-	version string = "v1"
+	configPath string = "."
+	configFile string = "app_config"
 )
 
 func main() {
-	if err := godotenv.Load(envFile); err != nil {
-		panic("failed load env file")
-	}
+	config.InitTimezone()
+	cfg := config.InitConfig(configPath, configFile)
 
-	if err := database.NewPostgresConnect(); err != nil {
+	if err := database.NewPostgresConnect(cfg); err != nil {
 		panic(err)
 	}
 
 	app := gin.Default()
-	routes.Setup(app, version)
+	routes.Setup(app, cfg.App().Version())
 
-	app.Run(":8080")
+	app.Run(cfg.App().Port())
 }

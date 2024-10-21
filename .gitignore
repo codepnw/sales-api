@@ -11,5 +11,4 @@ go.work
 tmp
 *.env
 Makefile
-handlers/order.go
-handlers/product.go
+*.yaml
