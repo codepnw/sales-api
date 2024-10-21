@@ -27,13 +27,12 @@ CREATE TABLE "users" (
 
 CREATE TABLE "user_roles" (
   "role_id" SERIAL PRIMARY KEY,
-  "name" VARCHAR UNIQUE NOT NULL,
-  "desc" VARCHAR
+  "title" VARCHAR UNIQUE NOT NULL
 );
 
 CREATE TABLE "products" (
   "product_id" VARCHAR(7) PRIMARY KEY DEFAULT CONCAT('P', LPAD(NEXTVAL('seq_product_id')::TEXT, 6, '0')),
-  "name" VARCHAR NOT NULL,
+  "title" VARCHAR NOT NULL,
   "desc" VARCHAR,
   "price" FLOAT DEFAULT 0,
   "discount" FLOAT DEFAULT 0,
@@ -94,18 +93,29 @@ CREATE TABLE "inventory_logs" (
   "date" TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-ALTER TABLE "users" ADD FOREIGN KEY ("role_id") REFERENCES "user_roles" ("role_id");
+CREATE TABLE "oauth" (
+  "oauth_id" uuid NOT NULL UNIQUE PRIMARY KEY DEFAULT uuid_generate_v4(),
+  "user_id" VARCHAR NOT NULL,
+  "access_token" VARCHAR NOT NULL,
+  "refresh_token" VARCHAR NOT NULL,
+  "created_at" TIMESTAMP NOT NULL DEFAULT now(),
+  "updated_at" TIMESTAMP NOT NULL DEFAULT now()
+);
 
-ALTER TABLE "products" ADD FOREIGN KEY ("category_id") REFERENCES "categories" ("category_id");
+ALTER TABLE "users" ADD FOREIGN KEY ("role_id") REFERENCES "user_roles" ("role_id") ON DELETE CASCADE;
 
-ALTER TABLE "orders" ADD FOREIGN KEY ("customer_id") REFERENCES "customers" ("customer_id");
+ALTER TABLE "products" ADD FOREIGN KEY ("category_id") REFERENCES "categories" ("category_id") ON DELETE CASCADE;
 
-ALTER TABLE "order_items" ADD FOREIGN KEY ("order_id") REFERENCES "orders" ("order_id");
+ALTER TABLE "orders" ADD FOREIGN KEY ("customer_id") REFERENCES "customers" ("customer_id") ON DELETE CASCADE;
 
-ALTER TABLE "order_items" ADD FOREIGN KEY ("product_id") REFERENCES "products" ("product_id");
+ALTER TABLE "order_items" ADD FOREIGN KEY ("order_id") REFERENCES "orders" ("order_id") ON DELETE CASCADE;
 
-ALTER TABLE "payments" ADD FOREIGN KEY ("order_id") REFERENCES "orders" ("order_id");
+ALTER TABLE "order_items" ADD FOREIGN KEY ("product_id") REFERENCES "products" ("product_id") ON DELETE CASCADE;
 
-ALTER TABLE "inventory_logs" ADD FOREIGN KEY ("product_id") REFERENCES "products" ("product_id");
+ALTER TABLE "payments" ADD FOREIGN KEY ("order_id") REFERENCES "orders" ("order_id") ON DELETE CASCADE;
+
+ALTER TABLE "inventory_logs" ADD FOREIGN KEY ("product_id") REFERENCES "products" ("product_id") ON DELETE CASCADE;
+
+ALTER TABLE "oauth" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("user_id") ON DELETE CASCADE;
 
 COMMIT;
